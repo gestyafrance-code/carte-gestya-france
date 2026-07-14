@@ -212,59 +212,34 @@ footer {
 </div>
 <footer>Carte adaptée pour Gestya France — source SVG sous licence CC BY 4.0.</footer>
 
+
 <script>
 (function () {
   "use strict";
 
-  const params = new URLSearchParams(window.location.search);
-  const configuredSite = params.get("site");
-
-  function getFramerOrigin() {
-    // 1. Adresse éventuellement fournie dans l’iframe avec ?site=https://monsite.fr
-    if (configuredSite && /^https?:\/\//i.test(configuredSite)) {
-      try {
-        return new URL(configuredSite).origin;
-      } catch (error) {
-        console.warn("Adresse de site invalide :", configuredSite);
-      }
-    }
-
-    // 2. Détection automatique du site Framer qui contient l’iframe
-    if (document.referrer) {
-      try {
-        return new URL(document.referrer).origin;
-      } catch (error) {
-        console.warn("Impossible de lire l’adresse du site parent.");
-      }
-    }
-
-    return "";
-  }
-
-  const framerOrigin = getFramerOrigin();
-
   document.querySelectorAll("a.departement-link").forEach(function (link) {
     const path = link.getAttribute("href");
 
-    // Tous les liens gardent un chemin propre du type :
-    // /departement-haute-garonne
-    link.setAttribute("target", "_top");
+    link.removeAttribute("target");
 
     link.addEventListener("click", function (event) {
       if (!path || !path.startsWith("/")) return;
 
       event.preventDefault();
 
-      if (framerOrigin) {
-        window.top.location.assign(framerOrigin + path);
-      } else {
-        // Secours si la carte est ouverte directement hors de Framer
-        window.top.location.assign(path);
-      }
+      // Envoie le chemin à Framer. Le composant Framer se charge de la navigation.
+      window.parent.postMessage(
+        {
+          type: "GESTYA_DEPARTEMENT_NAVIGATION",
+          path: path
+        },
+        "*"
+      );
     });
   });
 })();
 </script>
+
 
 </body>
 </html>
