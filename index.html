@@ -234,7 +234,40 @@ footer {
     return target.closest(".departement-link[data-url]");
   }
 
-  document.addEventListener("click", function (event) {
+  function getDestination(link) {
+    var storedUrl = link.getAttribute("data-url");
+
+    if (!storedUrl) {
+      return null;
+    }
+
+    var path;
+
+    try {
+      path = new URL(storedUrl).pathname;
+    } catch (error) {
+      return null;
+    }
+
+    /*
+      document.referrer contient l'adresse de la page Framer
+      qui héberge actuellement l'iframe.
+      On récupère son domaine automatiquement afin de ne plus
+      dépendre d'une ancienne URL de prévisualisation Framer.
+    */
+    if (document.referrer) {
+      try {
+        var parentOrigin = new URL(document.referrer).origin;
+        return parentOrigin + path;
+      } catch (error) {
+        // On utilise l'ancienne URL en secours.
+      }
+    }
+
+    return storedUrl;
+  }
+
+  function navigate(event) {
     var link = getDepartmentLink(event.target);
 
     if (!link) {
@@ -245,43 +278,27 @@ footer {
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    var url = link.getAttribute("data-url");
+    var destination = getDestination(link);
 
-    if (!url) {
+    if (!destination) {
       return;
     }
 
     try {
-      window.top.location.assign(url);
+      window.top.location.assign(destination);
     } catch (error) {
-      window.location.assign(url);
+      window.location.assign(destination);
     }
-  }, true);
+  }
+
+  document.addEventListener("click", navigate, true);
 
   document.addEventListener("keydown", function (event) {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
 
-    var link = getDepartmentLink(event.target);
-
-    if (!link) {
-      return;
-    }
-
-    event.preventDefault();
-
-    var url = link.getAttribute("data-url");
-
-    if (!url) {
-      return;
-    }
-
-    try {
-      window.top.location.assign(url);
-    } catch (error) {
-      window.location.assign(url);
-    }
+    navigate(event);
   }, true);
 })();
 </script>
