@@ -244,23 +244,21 @@ footer {
     var path;
 
     try {
-      path = new URL(storedUrl).pathname;
+      path = new URL(storedUrl, window.location.href).pathname;
     } catch (error) {
       return null;
     }
 
     /*
-      document.referrer contient l'adresse de la page Framer
-      qui héberge actuellement l'iframe.
-      On récupère son domaine automatiquement afin de ne plus
-      dépendre d'une ancienne URL de prévisualisation Framer.
+      On récupère automatiquement le domaine Framer de la page
+      qui contient actuellement la carte.
     */
     if (document.referrer) {
       try {
         var parentOrigin = new URL(document.referrer).origin;
         return parentOrigin + path;
       } catch (error) {
-        // On utilise l'ancienne URL en secours.
+        return storedUrl;
       }
     }
 
@@ -284,11 +282,12 @@ footer {
       return;
     }
 
-    try {
-      window.top.location.assign(destination);
-    } catch (error) {
-      window.location.assign(destination);
-    }
+    /*
+      Une seule navigation vers la fenêtre principale.
+      Aucun fallback avec window.location :
+      la page ne peut donc plus remplacer la carte dans l'iframe.
+    */
+    window.open(destination, "_top");
   }
 
   document.addEventListener("click", navigate, true);
