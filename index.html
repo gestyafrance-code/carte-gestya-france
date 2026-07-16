@@ -226,8 +226,6 @@ footer {
 (function () {
   "use strict";
 
-  var fallbackOrigin = "https://same-portion-238893.framer.app";
-
   function getDepartmentLink(target) {
     if (!target || typeof target.closest !== "function") {
       return null;
@@ -236,45 +234,7 @@ footer {
     return target.closest(".departement-link[data-url]");
   }
 
-  function getDestination(link) {
-    var storedUrl = link.getAttribute("data-url");
-
-    if (!storedUrl) {
-      return null;
-    }
-
-    var pathname;
-
-    try {
-      pathname = new URL(storedUrl).pathname;
-    } catch (error) {
-      return null;
-    }
-
-    /*
-      Dans Framer, document.referrer correspond à la page qui contient
-      la carte. On utilise donc automatiquement son domaine actuel.
-    */
-    if (document.referrer) {
-      try {
-        var parentUrl = new URL(document.referrer);
-
-        if (parentUrl.protocol === "https:" || parentUrl.protocol === "http:") {
-          return parentUrl.origin + pathname;
-        }
-      } catch (error) {
-        // Le domaine de secours sera utilisé.
-      }
-    }
-
-    /*
-      Lors d'un test direct depuis GitHub, il n'y a pas de page Framer
-      parente : on utilise alors le domaine Framer actuel.
-    */
-    return fallbackOrigin + pathname;
-  }
-
-  function navigate(event) {
+  function openDepartment(event) {
     var link = getDepartmentLink(event.target);
 
     if (!link) {
@@ -285,27 +245,23 @@ footer {
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    var destination = getDestination(link);
+    var url = link.getAttribute("data-url");
 
-    if (!destination) {
+    if (!url || !url.startsWith("https://same-portion-238893.framer.app/departement-")) {
       return;
     }
 
-    try {
-      window.top.location.assign(destination);
-    } catch (error) {
-      window.location.assign(destination);
-    }
+    window.top.location.href = url;
   }
 
-  document.addEventListener("click", navigate, true);
+  document.addEventListener("click", openDepartment, true);
 
   document.addEventListener("keydown", function (event) {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
 
-    navigate(event);
+    openDepartment(event);
   }, true);
 })();
 </script>
