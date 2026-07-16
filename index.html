@@ -250,8 +250,8 @@ footer {
     }
 
     /*
-      On récupère automatiquement le domaine Framer actuel
-      depuis la page qui contient la carte.
+      On récupère automatiquement le domaine Framer de la page
+      qui contient actuellement la carte.
     */
     if (document.referrer) {
       try {
@@ -265,7 +265,7 @@ footer {
     return storedUrl;
   }
 
-  function openDepartment(event) {
+  function navigate(event) {
     var link = getDepartmentLink(event.target);
 
     if (!link) {
@@ -283,20 +283,21 @@ footer {
     }
 
     /*
-      Ouverture uniquement dans un nouvel onglet.
-      Aucune navigation dans l'iframe et aucun fallback.
+      Une seule navigation vers la fenêtre principale.
+      Aucun fallback avec window.location :
+      la page ne peut donc plus remplacer la carte dans l'iframe.
     */
-    window.open(destination, "_blank", "noopener,noreferrer");
+    window.open(destination, "_top");
   }
 
-  document.addEventListener("click", openDepartment, true);
+  document.addEventListener("click", navigate, true);
 
   document.addEventListener("keydown", function (event) {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
 
-    openDepartment(event);
+    navigate(event);
   }, true);
 })();
 </script>
