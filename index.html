@@ -234,38 +234,7 @@ footer {
     return target.closest(".departement-link[data-url]");
   }
 
-  function getDestination(link) {
-    var storedUrl = link.getAttribute("data-url");
-
-    if (!storedUrl) {
-      return null;
-    }
-
-    var path;
-
-    try {
-      path = new URL(storedUrl, window.location.href).pathname;
-    } catch (error) {
-      return null;
-    }
-
-    /*
-      On récupère automatiquement le domaine Framer de la page
-      qui contient actuellement la carte.
-    */
-    if (document.referrer) {
-      try {
-        var parentOrigin = new URL(document.referrer).origin;
-        return parentOrigin + path;
-      } catch (error) {
-        return storedUrl;
-      }
-    }
-
-    return storedUrl;
-  }
-
-  function navigate(event) {
+  document.addEventListener("click", function (event) {
     var link = getDepartmentLink(event.target);
 
     if (!link) {
@@ -276,28 +245,43 @@ footer {
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    var destination = getDestination(link);
+    var url = link.getAttribute("data-url");
 
-    if (!destination) {
+    if (!url) {
       return;
     }
 
-    /*
-      Une seule navigation vers la fenêtre principale.
-      Aucun fallback avec window.location :
-      la page ne peut donc plus remplacer la carte dans l'iframe.
-    */
-    window.open(destination, "_top");
-  }
-
-  document.addEventListener("click", navigate, true);
+    try {
+      window.top.location.assign(url);
+    } catch (error) {
+      window.location.assign(url);
+    }
+  }, true);
 
   document.addEventListener("keydown", function (event) {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
     }
 
-    navigate(event);
+    var link = getDepartmentLink(event.target);
+
+    if (!link) {
+      return;
+    }
+
+    event.preventDefault();
+
+    var url = link.getAttribute("data-url");
+
+    if (!url) {
+      return;
+    }
+
+    try {
+      window.top.location.assign(url);
+    } catch (error) {
+      window.location.assign(url);
+    }
   }, true);
 })();
 </script>
